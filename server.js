@@ -8,6 +8,10 @@ app.use(express.json());
 
 const DATA_FILE = ',/jobs.json'
 
+app.get('/', (req, res) => {
+  res.send('Jobs backend API is running');
+});
+
 //Read 
 app.get('/jobs',(req,res) => {
     const jobs = JSON.parse(fs.readFileSync(DATA_FILE));
