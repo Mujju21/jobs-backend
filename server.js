@@ -14,63 +14,76 @@ app.get('/', (req, res) => {
 });
 
 //Read 
-app.get('/jobs',(req,res) => {
-    try{
-        const jobs = JSON.parse(fs.readFileSync(DATA_FILE));
-        res.json(jobs);
-    }catch(error){
-        res.status(500).json({ error: 'Could not read jobs file' });
-    }
-
+app.get('/jobs', (req, res) => {
+  try {
+    const data = JSON.parse(fs.readFileSync(DATA_FILE));
+    res.json(data.jobs); 
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Could not read jobs file' });
+  }
 });
 
-//Add 
-app.post('/jobs',(req,res) => {
-    try{
-        const jobs = JSON.parse(fs.readFileSync(DATA_FILE));
-        const newJob = req.body;
+// ADD
+app.post('/jobs', (req, res) => {
+  try {
+    const data = JSON.parse(fs.readFileSync(DATA_FILE));
+    const jobs = data.jobs;
 
-        // Generate serial ID
-        const lastId = jobs.length > 0 ? jobs[jobs.length - 1].id : 0;
-        newJob.id = lastId + 1;
+    const newJob = req.body;
 
-        jobs.push(newJob);
-        fs.writeFileSync(DATA_FILE,JSON.stringify(jobs,null,2));
-        res.json(newJob);
-    }catch(error){
-        console.error(error);
-        res.status(500).json({ error: 'Could not add job' });
-    }
+    const lastId = jobs.length > 0 ? parseInt(jobs[jobs.length - 1].id) : 0;
+    newJob.id = lastId + 1;
 
+    jobs.push(newJob);
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+    res.json(newJob);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Could not add job' });
+  }
 });
 
-//update
+// Update job
 app.put('/jobs/:id', (req, res) => {
-    try{
-        let jobs = JSON.parse(fs.readFileSync(DATA_FILE));
-        const jobId = (req.params.id);
-        jobs = jobs.map(job => job.id === jobId ? {...job, ...req.body} : job);
-        fs.writeFileSync(DATA_FILE, JSON.stringify(jobs,null,2));
-        res.json({ success: true});
-    }catch(error){
-        res.status(500).json({ error: 'Could not update job' });
-    }
-    
+  try {
+    const data = JSON.parse(fs.readFileSync(DATA_FILE));
+    const jobs = data.jobs;
+    const jobId = req.params.id;
+
+    const updatedJobs = jobs.map(job =>
+      job.id == jobId ? { ...job, ...req.body, id: job.id } : job
+    );
+
+    data.jobs = updatedJobs;
+
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+    res.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Could not update job' });
+  }
 });
 
-//delete
-app.delete('/jobs/:id', (req,res) => {
-    try{
-        let jobs = JSON.parse(fs.readFileSync(DATA_FILE));
-        const jobId = (req.params.id);
-        jobs = jobs.filter(job => job.id !== jobId);
-        fs.writeFileSync(DATA_FILE, JSON.stringify(jobs, null, 2));
-        res.json({ success: true });
-    }catch(error){
-        res.status(500).json({ error: 'Could not delete job' });
-    }
+// Delete job
+app.delete('/jobs/:id', (req, res) => {
+  try {
+    const data = JSON.parse(fs.readFileSync(DATA_FILE));
+    const jobs = data.jobs;
+    const jobId = req.params.id;
 
+    const filteredJobs = jobs.filter(job => job.id != jobId);
+    data.jobs = filteredJobs;
+
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+    res.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Could not delete job' });
+  }
 });
+
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
