@@ -20,7 +20,6 @@ app.get('/jobs',(req,res) => {
         res.json(jobs);
     }catch(error){
         res.status(500).json({ error: 'Could not read jobs file' });
-
     }
 
 });
@@ -39,6 +38,7 @@ app.post('/jobs',(req,res) => {
         fs.writeFileSync(DATA_FILE,JSON.stringify(jobs,null,2));
         res.json(newJob);
     }catch(error){
+        console.error(error);
         res.status(500).json({ error: 'Could not add job' });
     }
 
@@ -48,7 +48,7 @@ app.post('/jobs',(req,res) => {
 app.put('/jobs/:id', (req, res) => {
     try{
         let jobs = JSON.parse(fs.readFileSync(DATA_FILE));
-        const jobId = Number(req.params.id);
+        const jobId = (req.params.id);
         jobs = jobs.map(job => job.id === jobId ? {...job, ...req.body} : job);
         fs.writeFileSync(DATA_FILE, JSON.stringify(jobs,null,2));
         res.json({ success: true});
@@ -62,7 +62,7 @@ app.put('/jobs/:id', (req, res) => {
 app.delete('/jobs/:id', (req,res) => {
     try{
         let jobs = JSON.parse(fs.readFileSync(DATA_FILE));
-        const jobId = Number(req.params.id);
+        const jobId = (req.params.id);
         jobs = jobs.filter(job => job.id !== jobId);
         fs.writeFileSync(DATA_FILE, JSON.stringify(jobs, null, 2));
         res.json({ success: true });
